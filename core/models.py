@@ -5,7 +5,6 @@ from django.core.validators import MinValueValidator
 class User(AbstractUser):
     class Role(models.TextChoices):
         CUSTOMER = 'CU', 'Customer'
-        VENUE_OWNER = 'VO', 'Venue Owner'
         ADMIN = 'AD', 'Admin'
         EVENT_OWNER = 'EO', 'Event Owner'
 
@@ -18,9 +17,6 @@ class User(AbstractUser):
     def is_customer(self):
         return self.role == self.Role.CUSTOMER
     
-    @property
-    def is_venue_owner(self):
-        return self.role == self.Role.VENUE_OWNER
     
     @property
     def is_event_owner(self):
@@ -29,33 +25,22 @@ class User(AbstractUser):
     def save(self, *args, **kwargs):
         if self.role == self.Role.CUSTOMER:
             self.is_approved = True
+        elif self.role == self.Role.EVENT_OWNER:
+            self.is_active = True
         super().save(*args, **kwargs)
         
-class Venue(models.Model):
-    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='venues')
-    name = models.CharField(max_length=100)
-    address = models.TextField()
-    capacity = models.PositiveIntegerField(validators=[MinValueValidator(1)])
-    photo = models.ImageField(upload_to='venues/', null=True, blank=True)
-    is_active = models.BooleanField(default=True)
-
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields = ['owner', 'name'],
-                name = 'UNIQUE_VENUE_name_per_owner'
-            )
-        ]
 
 class Event(models.Model):
-    venue = models.ForeignKey(Venue, on_delete=models.CASCADE, related_name='events')
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='events', null=True)
     title = models.CharField(max_length=200)
     description = models.TextField()
-    date_time = models.TimeField()
+    date_time = models.DateTimeField()
     ticket_price = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
     tickets_remaining = models.PositiveIntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
     is_cancelled = models.BooleanField(default=False)
+    image = models.ImageField(upload_to='event_images/', blank=True, null=True, verbose_name="Event Image")
+    thumbnail = models.ImageField(upload_to='event_thumbnails/', blank=True, null=True, verbose_name='Thumbnail Image')
 
 class Tickets(models.Model):
     event = models.ForeignKey(Event, on_delete=models.PROTECT, related_name='tickets')

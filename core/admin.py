@@ -1,8 +1,7 @@
 from django.contrib import admin
-from .models import User,Venue, Event, Tickets # Import your models
+from .models import User, Event, Tickets # Import your models
 
 # Register models to show in admin
-admin.site.register(Venue)
 admin.site.register(Event)
 admin.site.register(Tickets)
 
