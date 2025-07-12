@@ -5,11 +5,13 @@ from datetime import datetime, time, date
 from django.contrib.auth import get_user_model
 User = get_user_model()
 from django.contrib.auth.password_validation import validate_password
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'role']
+        fields = ['id', 'username', 'email', 'is_event_owner', 'is_approved', 'role', 'phone', 'email_verified']
         read_only_fields = ['role']
 
 class EventSignUpSerializer(serializers.ModelSerializer):
@@ -137,3 +139,15 @@ class TicketSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({
                 'non_field_errors': str(e)
             })
+        
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+
+        # Add custom claims
+        token['username'] = user.username
+        token['is_event_owner'] = user.is_event_owner
+        token['is_approved'] = user.is_approved
+
+        return token
