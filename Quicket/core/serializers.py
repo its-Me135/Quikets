@@ -105,7 +105,8 @@ class TicketSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Tickets
-        fields = ['id', 'event', 'purchase_date', 'qr_code', 'is_used', 'cancelled']
+        event_id = serializers.ReadOnlyField(source='event', read_only=True)
+        fields = ['id', 'event', 'event_id', 'title','purchase_date', 'qr_code', 'is_used', 'cancelled']
         read_only_fields = ['user', 'purchase_date', 'qr_code', 'is_used', 'cancelled']
 
     def validate(self, data):

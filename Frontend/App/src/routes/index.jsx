@@ -8,6 +8,7 @@ import Events from '../pages/Events';
 import MyTickets from '../pages/MyTickets';
 import CreateEvent from '../pages/CreateEvent';
 import ProtectedRoute from '../components/ProtectedRoute';
+import EventDetail from '../pages/EventDetail'
 
 // Export the router configuration directly
 export const router = createBrowserRouter([
@@ -20,6 +21,7 @@ export const router = createBrowserRouter([
       { path: 'signup/customer', element: <CustomerSignup /> },
       { path: 'signup/event-owner', element: <EventOwnerSignup /> },
       { path: 'events', element: <Events /> },
+      { path: 'events/:id', element: <EventDetail /> }, 
       {
         element: <ProtectedRoute />,
         children: [

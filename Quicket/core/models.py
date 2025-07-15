@@ -49,3 +49,12 @@ class Tickets(models.Model):
     qr_code = models.CharField(max_length=100, unique=True)
     is_used = models.BooleanField(default=False)
     cancelled = models.BooleanField(default=False)
+    qr_code_image = models.ImageField(  upload_to='qr_codes/',
+                                        null=True,
+                                        blank=True)
+
+    @property
+    def title(self):
+        return self.event.title
+    
+   

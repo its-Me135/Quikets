@@ -1,3 +1,5 @@
+import secrets, qrcode, io
+from django.core.files import File
 from django.shortcuts import render
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
@@ -10,12 +12,11 @@ from rest_framework.exceptions import PermissionDenied
 from django.db import transaction
 from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
 from django.views.decorators.csrf import csrf_exempt
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from rest_framework.authtoken.models import Token
 from rest_framework.authentication import SessionAuthentication
 from django.contrib.auth import authenticate
 from rest_framework.parsers import MultiPartParser, FormParser
-from django.http import JsonResponse
 from django.middleware.csrf import get_token
 from django.views.decorators.csrf import ensure_csrf_cookie
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
@@ -195,13 +196,26 @@ class TicketListCreateAPIView(generics.ListCreateAPIView):
                 
            
             qr_code = f"TKT-{secrets.token_hex(10)}"
-            
+             # Generate QR code image
+            qr = qrcode.QRCode(
+            version=1,
+            error_correction=qrcode.constants.ERROR_CORRECT_L,
+            box_size=10,
+            border=4,
+            )
+            qr.add_data(qr_code)
+            qr.make(fit=True)
+            img = qr.make_image(fill_color="black", back_color="white")
+            buffer = io.BytesIO()
+            img.save(buffer)
             
             event.tickets_remaining -= 1
+
             event.save()
             serializer.save(
                 user=self.request.user,
-                qr_code=qr_code
+                qr_code=qr_code,
+                qr_code_image=File(buffer, name=f'{qr_code}.png')
             )
 class TicketDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = TicketSerializer
